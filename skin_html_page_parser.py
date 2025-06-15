@@ -52,9 +52,12 @@ class SkinHtmlPageParser():
         float_value = ''.join([
             element.find('div', attrs={'class': 'spec-value'}).text
             for element in self.html_document.find_all('div', attrs={'class': 'spec-item'})
-            if element.find('div', attrs={'class': 'spec-title'}).text == 'Float'
+            if element.find('div', attrs={'class': 'spec-title'}) and element.find('div', attrs={'class': 'spec-title'}).text == 'Float'
         ])
-        return float(float_value)
+        try:
+            return float(float_value) if float_value else 0.0
+        except ValueError:
+            return 0.0
 
     def get_stickers(self) -> List[str]:
         """
@@ -81,5 +84,12 @@ class SkinHtmlPageParser():
         - float: The price of the skin or 0.0 if the price is not found.
         """
         price = self.html_document.find('div', attrs={'class': 'min-price-value'})
-        price = price.text.replace('$', '') if price is not None else 0.0
-        return float(price) if not isinstance(price, float) else price
+        if price is not None:
+            # Clean the price text by removing whitespace, currency symbols and extracting just the number
+            price_text = price.text.strip().replace('$', '').replace('\n', '').replace(' ', '')
+            # Extract just the price part (before any other characters like discount info)
+            import re
+            price_match = re.search(r'(\d+\.?\d*)', price_text)
+            if price_match:
+                return float(price_match.group(1))
+        return 0.0

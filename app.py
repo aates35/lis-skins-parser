@@ -25,9 +25,15 @@ driver_path = os.path.join(driver_path, 'chromedriver')
 
 options = ChromeOptions()
 options.add_argument('--headless')
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36')
 
 driver = Chrome(options=options)
-driver.get('https://lis-skins.ru/')
+# Execute stealth script to avoid detection
+driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+
+driver.get('https://lis-skins.com/')
 load_cokies_to_driver(driver, 'cookies_to_driver.json')
 
 wait = WebDriverWait(driver, 10)
@@ -81,7 +87,7 @@ def main() -> None:
                
             for item_data in items_to_purchase:
                 purchase_skin(item_data)
-        time.sleep(5)
+        time.sleep(30)  # Increased delay to avoid rate limiting
 
                 
 if __name__ == "__main__":
